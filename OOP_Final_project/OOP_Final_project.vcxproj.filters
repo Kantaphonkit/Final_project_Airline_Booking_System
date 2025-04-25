@@ -21,15 +21,21 @@
     <ClCompile Include="lib\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Database.cpp">
+    <ClCompile Include="flightDatabase.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modifyFlightDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modifyFlightDB.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\sqlite3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Database.h">
+    <ClInclude Include="flightDatabase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
