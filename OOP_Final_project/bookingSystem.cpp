@@ -85,7 +85,7 @@ void searchByFlightID(string& flightID) {
 
 }
 
-void searchBydepartureTime(string& flgihtTime) {
+void searchBydepartureTime(string& flightTime) {
 
 	
 	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // flush \n
@@ -97,7 +97,6 @@ void searchBydepartureTime(string& flgihtTime) {
 
 void searchByTerminalStation(string& origin, string& destination) {
 
-	string origin, destination;
 	cout << "Enter origin: ";
 	cin >> origin;
 	cout << "Enter destination: ";
