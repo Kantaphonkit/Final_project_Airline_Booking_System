@@ -5,27 +5,45 @@
 
 using namespace std;
 
+void searchByFlightID(string& flightID);
+void searchBydepartureTime(string& flightTime);
+void searchByTerminalStation(string& origin, string& destination);
+
 int bookingSystem(flightDatabase& flightDB) {
 
 	char option = '0';
+	string flightId, origin, destination, flightTime;
 
 	while (1) {
 
 		if (option == '0') {
 			flightDB.showAllFlights();
+		} else if(option == '1') {
+			flightDB.queryByFlightID(flightId);
+		}
+		else if (option == '2') {
+			flightDB.queryByDepartureTime(flightTime);
+		}
+		else if (option == '3') {
+			flightDB.queryByRoute(origin, destination);
 		}
 
 		cout << "---------------- " << "This is booking page" << " ----------------" << endl;
 		cout << "Choose your option below:" << endl;
-		cout << "1. Search a flight by flight ID." << endl;
-		cout << "2. Search a flight by depaparture time." << endl;
-		cout << "3. Search a flight by terminal station." << endl;
+		cout << "0. Reset query" << endl;
+		cout << "1. Search a flight by flight ID" << endl;
+		cout << "2. Search a flight by depaparture time" << endl;
+		cout << "3. Search a flight by terminal station" << endl;
 		cout << "4. Book a flight" << endl;
 		cout << "5. Cancel a flight" << endl;
 		cout << "6. Return to Home page" << endl;
 		cout << "Enter your option: ";
 		cin >> option;
 		switch (option) {
+		case'0':
+		{
+			break;
+		}
 		case '1':
 		{
 			// bookFlight(flightDB);
@@ -58,4 +76,31 @@ int bookingSystem(flightDatabase& flightDB) {
 		}
 		}
 	}
+}
+
+void searchByFlightID(string& flightID) {
+
+	cout << "Enter flight ID: ";
+	cin >> flightID;
+
+}
+
+void searchBydepartureTime(string& flgihtTime) {
+
+	
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // flush \n
+	std::cout << "Enter flight time (YYYY-MM-DD HH:MM): ";
+	std::getline(std::cin, flightTime);
+
+}
+
+
+void searchByTerminalStation(string& origin, string& destination) {
+
+	string origin, destination;
+	cout << "Enter origin: ";
+	cin >> origin;
+	cout << "Enter destination: ";
+	cin >> destination;
+
 }
