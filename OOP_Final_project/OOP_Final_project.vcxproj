@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bookingSystem.cpp" />
     <ClCompile Include="flightDatabase.cpp" />
     <ClCompile Include="lib\sqlite3.c" />
     <ClCompile Include="Main.cpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="modifyFlightDB.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bookingSystem.h" />
     <ClInclude Include="flightDatabase.h" />
     <ClInclude Include="lib\sqlite3.h" />
   </ItemGroup>

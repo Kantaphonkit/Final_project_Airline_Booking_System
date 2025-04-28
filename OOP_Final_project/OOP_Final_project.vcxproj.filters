@@ -30,12 +30,18 @@
     <ClCompile Include="modifyFlightDB.h">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="bookingSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\sqlite3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="flightDatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bookingSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

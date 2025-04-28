@@ -2,13 +2,17 @@
 #include "sqlite3.h"
 #include "flightDatabase.h"
 #include "modifyFlightDB.h"
+#include "bookingSystem.h"
 
 using namespace std;
 
 int main() {
 
 	flightDatabase flightDB("airline.db");
+	flightDatabase bookingDB("booking.db");
+
 	flightDB.createFlightTable();
+	bookingDB.createFlightTable();
 
 	char option;
     
@@ -29,7 +33,7 @@ int main() {
 			}
 			case '2':
 			{
-				cout << "option 2 was called" << endl;
+				bookingSystem(flightDB);
 				break;
 			}
 			case '3':
