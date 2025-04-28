@@ -39,41 +39,42 @@ int bookingSystem(flightDatabase& flightDB) {
 		cout << "6. Return to Home page" << endl;
 		cout << "Enter your option: ";
 		cin >> option;
+
 		switch (option) {
-		case'0':
-		{
-			break;
-		}
-		case '1':
-		{
-			// bookFlight(flightDB);
-			break;
-		}
-		case '2':
-		{
-			// cancelFlight(flightDB);
-			break;
-		}
-		case '3':
-		{
-			cout << "Return to Home." << endl;
-			break;
-		}
-		case '4':
-		{
-			cout << "Return to Home." << endl;
-			break;
-		}
-		case '5':
-		{
-			cout << "Return to Home." << endl;
-			break;
-		}
-		case '6':
-		{
-			cout << "Return to Home." << endl;
-			return 0;
-		}
+			case'0':
+			{
+				break;
+			}
+			case '1':
+			{
+				searchByFlightID(flightId);
+				break;
+			}
+			case '2':
+			{
+				searchBydepartureTime(flightTime);
+				break;
+			}
+			case '3':
+			{
+				searchByTerminalStation(origin, destination);
+				break;
+			}
+			case '4':
+			{
+				cout << "Return to Home." << endl;
+				break;
+			}
+			case '5':
+			{
+				cout << "Return to Home." << endl;
+				break;
+			}
+			case '6':
+			{
+				cout << "Return to Home." << endl;
+				return 0;
+			}
 		}
 	}
 }
