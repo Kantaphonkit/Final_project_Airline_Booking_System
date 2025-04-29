@@ -29,12 +29,12 @@ class flightDatabase {
         void queryByRoute(const std::string& origin,
                           const std::string& destination);
 
-        static bool modifyTicket(flightDatabase& flightDB,
-                                 flightDatabase& bookingDB,
-                                 const std::string& flightId,
-                                 int mode,          // 0 = book, 1 = cancel
-                                 int change);       // seats to add/remove
+        static bool modifyTicket(flightDatabase& flightDB, 
+                          flightDatabase& bookingDB, 
+                          const std::string& flightId, 
+                          int mode, 
+                          int change);
 
-    };
+};
 
 #endif  // FLIGHT_DATABASE_H

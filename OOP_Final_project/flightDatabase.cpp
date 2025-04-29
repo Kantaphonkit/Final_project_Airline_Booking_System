@@ -347,5 +347,3 @@ bool flightDatabase::modifyTicket(flightDatabase& flightDB,
     sqlite3_exec(bdb, "COMMIT;", nullptr, nullptr, nullptr);
     return true;
 }
-
-
