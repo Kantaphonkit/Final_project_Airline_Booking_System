@@ -53,9 +53,9 @@ int insertFlight(flightDatabase& flightDB) {
 	cin >> origin;
 	cout << "Enter destination: ";
 	cin >> destination;
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // flush \n
-	std::cout << "Enter flight time (YYYY-MM-DD HH:MM): ";
-	std::getline(std::cin, flightTime);
+	cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // flush \n
+	cout << "Enter flight time (YYYY-MM-DD HH:MM): ";
+	getline(std::cin, flightTime);
 	cout << "Enter number of ticket : ";
 	cin >> ticket;
 
