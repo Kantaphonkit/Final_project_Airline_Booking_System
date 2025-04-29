@@ -3,6 +3,6 @@
 
 class flightDatabase;
 
-int bookingSystem(flightDatabase& flightDB);
+int bookingSystem(flightDatabase& flightDB, flightDatabase& bookingDB);
 
 #endif  // FLIGHT_DATABASE_Hs

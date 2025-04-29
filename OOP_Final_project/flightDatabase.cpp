@@ -1,4 +1,4 @@
-#include "flightDatabase.h"
+﻿#include "flightDatabase.h"
 #include <iostream>
 
 
@@ -203,5 +203,149 @@ void flightDatabase::queryByRoute(const std::string& origin,
     }
 }
 
+
+/* -----------------------------------------------------------
+   Helper: fetch current ticket count (returns −1 if not found)
+   ----------------------------------------------------------- */
+static int getTicket(sqlite3* db, const std::string& flightId)
+{
+    const char* sql = "SELECT ticket FROM flight WHERE flight_id = ?;";
+    sqlite3_stmt* st = nullptr;
+    int ticket = -1;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &st, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(st, 1, flightId.c_str(), -1, SQLITE_TRANSIENT);
+        if (sqlite3_step(st) == SQLITE_ROW)
+            ticket = sqlite3_column_int(st, 0);
+    }
+    sqlite3_finalize(st);
+    return ticket;
+}
+
+/* -----------------------------------------------------------
+   Helper: copy full row from src → dst when booking first time
+   ----------------------------------------------------------- */
+static bool copyRow(sqlite3* dst, sqlite3* src, const std::string& flightId,
+    int initialTicket)
+{
+    /* grab origin, destination, time from src */
+    const char* sel =
+        "SELECT origin, destination, flight_time "
+        "FROM flight WHERE flight_id = ?;";
+    sqlite3_stmt* st = nullptr;
+    if (sqlite3_prepare_v2(src, sel, -1, &st, nullptr) != SQLITE_OK)
+        return false;
+
+    sqlite3_bind_text(st, 1, flightId.c_str(), -1, SQLITE_TRANSIENT);
+    if (sqlite3_step(st) != SQLITE_ROW) { sqlite3_finalize(st); return false; }
+
+    std::string origin =
+        reinterpret_cast<const char*>(sqlite3_column_text(st, 0));
+    std::string destination =
+        reinterpret_cast<const char*>(sqlite3_column_text(st, 1));
+    std::string flightTime =
+        reinterpret_cast<const char*>(sqlite3_column_text(st, 2));
+    sqlite3_finalize(st);
+
+    /* insert into dst */
+    const char* ins =
+        "INSERT INTO flight (flight_id, origin, destination, flight_time, ticket) "
+        "VALUES (?, ?, ?, ?, ?);";
+    if (sqlite3_prepare_v2(dst, ins, -1, &st, nullptr) != SQLITE_OK)
+        return false;
+
+    sqlite3_bind_text(st, 1, flightId.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st, 2, origin.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st, 3, destination.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(st, 4, flightTime.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(st, 5, initialTicket);
+
+    bool ok = (sqlite3_step(st) == SQLITE_DONE);
+    sqlite3_finalize(st);
+    return ok;
+}
+
+/* -----------------------------------------------------------
+   MAIN routine: modifyTicket
+   ----------------------------------------------------------- */
+bool flightDatabase::modifyTicket(flightDatabase& flightDB,
+    flightDatabase& bookingDB,
+    const std::string& flightId,
+    int mode, int change)
+{
+    if (change <= 0) { std::cerr << "change must be positive\n"; return false; }
+    if (mode != 0 && mode != 1) { std::cerr << "mode must be 0 or 1\n"; return false; }
+
+    sqlite3* fdb = flightDB.db;
+    sqlite3* bdb = bookingDB.db;
+
+    /* 1. start Tx on both DBs */
+    sqlite3_exec(fdb, "BEGIN IMMEDIATE;", nullptr, nullptr, nullptr);
+    sqlite3_exec(bdb, "BEGIN IMMEDIATE;", nullptr, nullptr, nullptr);
+
+    auto rollback = [&]() {
+        sqlite3_exec(fdb, "ROLLBACK;", nullptr, nullptr, nullptr);
+        sqlite3_exec(bdb, "ROLLBACK;", nullptr, nullptr, nullptr);
+        };
+
+    /* 2. fetch ticket counts */
+    int fTicket = getTicket(fdb, flightId);
+    int bTicket = getTicket(bdb, flightId);
+
+    if (mode == 0) {                             /* ---- BOOK ---- */
+        if (fTicket < 0) { std::cerr << "Flight not found.\n"; rollback(); return false; }
+        if (fTicket < change) { std::cerr << "Not enough seats.\n"; rollback(); return false; }
+
+        /* update flightDB (−change) */
+        const char* updF = "UPDATE flight SET ticket = ticket - ? WHERE flight_id = ?;";
+        sqlite3_stmt* st = nullptr;
+        sqlite3_prepare_v2(fdb, updF, -1, &st, nullptr);
+        sqlite3_bind_int(st, 1, change);
+        sqlite3_bind_text(st, 2, flightId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_step(st); sqlite3_finalize(st);
+
+        /* booking DB: insert or increment */
+        if (bTicket < 0) {
+            if (!copyRow(bdb, fdb, flightId, change)) { rollback(); return false; }
+        }
+        else {
+            const char* updB = "UPDATE flight SET ticket = ticket + ? WHERE flight_id = ?;";
+            sqlite3_prepare_v2(bdb, updB, -1, &st, nullptr);
+            sqlite3_bind_int(st, 1, change);
+            sqlite3_bind_text(st, 2, flightId.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_step(st); sqlite3_finalize(st);
+        }
+    }
+    else {                                       /* ---- CANCEL ---- */
+        if (bTicket < 0) { std::cerr << "Booking not found.\n"; rollback(); return false; }
+        if (bTicket < change) { std::cerr << "Cancel exceeds booking.\n"; rollback(); return false; }
+
+        /* update bookingDB (−change) or delete row if zero */
+        const char* updB =
+            "UPDATE flight SET ticket = ticket - ? WHERE flight_id = ?;";
+        sqlite3_stmt* st = nullptr;
+        sqlite3_prepare_v2(bdb, updB, -1, &st, nullptr);
+        sqlite3_bind_int(st, 1, change);
+        sqlite3_bind_text(st, 2, flightId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_step(st); sqlite3_finalize(st);
+
+        sqlite3_exec(bdb,
+            "DELETE FROM flight WHERE ticket = 0 AND flight_id = ?1;",
+            nullptr, nullptr, nullptr);
+
+        /* update flightDB (+change) */
+        const char* updF =
+            "UPDATE flight SET ticket = ticket + ? WHERE flight_id = ?;";
+        sqlite3_prepare_v2(fdb, updF, -1, &st, nullptr);
+        sqlite3_bind_int(st, 1, change);
+        sqlite3_bind_text(st, 2, flightId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_step(st); sqlite3_finalize(st);
+    }
+
+    /* 3. commit both */
+    sqlite3_exec(fdb, "COMMIT;", nullptr, nullptr, nullptr);
+    sqlite3_exec(bdb, "COMMIT;", nullptr, nullptr, nullptr);
+    return true;
+}
 
 

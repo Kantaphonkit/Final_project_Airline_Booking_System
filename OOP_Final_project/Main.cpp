@@ -37,7 +37,7 @@ int main() {
 			}
 			case '2':
 			{
-				bookingSystem(flightDB);
+				bookingSystem(flightDB, bookingDB);
 				break;
 			}
 			case '3':
